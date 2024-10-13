@@ -1,0 +1,23 @@
+{
+    "manifest_version": 3,
+    "name": "Rapid Copy",
+    "version": "1.0",
+    "description": "A Chrome extension to manage data pairs with options to add, modify, delete, and export/import JSON data.",
+    "action": {
+      "default_popup": "popup.html",
+      "default_icon": {
+        "16": "Icons/logo.png",
+        "48": "Icons/logo.png",
+        "128": "Icons/logo.png"
+      }
+    },
+    "icons": {
+      "16": "Icons/logo.png",
+      "48": "Icons/logo.png",
+      "128": "Icons/logo.png"
+    },
+    "permissions": [
+      "storage",
+      "clipboardWrite"
+    ]
+  }
