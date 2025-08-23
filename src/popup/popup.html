@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Popup</title>
+  <link rel="stylesheet" href="./popup.css" />
+</head>
+
+<body>
+  <div class="tabs glass">
+    <button class="tablinks" data-mode="data">Data</button>
+    <button class="tablinks" data-mode="notes">Notes</button>
+    <button class="tablinks" data-mode="url">URL</button>
+  </div>
+  
+  <div class="container glass">
+    <div id="data" class="tabcontent">
+      <nav class="navbar glass">
+        <div class="search-container">
+          <input type="search" placeholder="Search data..." id="searchInput" />
+        </div>
+        <div class="navbar-actions">
+          <button class="btn" id="addBtnData">Add</button>
+          <button class="btn secondary" id="optionsBtn">Options</button>
+        </div>
+      </nav>
+
+      <!-- Container where temporary inputs will appear -->
+      <div id="input-container"></div>
+
+      <!-- Container where saved data goes -->
+      <div id="data-container"></div>
+    </div>
+
+    <div id="notes" class="tabcontent">
+      <div class="empty-state">
+        <div class="empty-state-icon">📝</div>
+        <p>Notes feature coming soon...</p>
+      </div>
+    </div>
+    
+    <div id="url" class="tabcontent">
+      <div class="empty-state">
+        <div class="empty-state-icon">🔗</div>
+        <p>URL management feature coming soon...</p>
+      </div>
+    </div>
+  </div>
+   <!-- Success message -->
+  <div id="successMessage" class="success-message">Copied to clipboard!</div>
+
+  <script type="module" src="./popup.ts"></script>
+</body>
+</html>
