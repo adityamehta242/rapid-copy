@@ -3,8 +3,9 @@ interface DataItem {
   id: number;
   key: string;
   value: string;
-  status: 'active' | 'inactive';
+  status: 'active' | 'inactive' | 'archived';
   createdAt: string;
+  isPinned: boolean;
 }
 
 interface StorageData {
@@ -125,7 +126,8 @@ function saveData(): void {
     key, 
     value, 
     status: "active",
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    isPinned: false
   };
 
   currentData.push(newItem);
@@ -150,12 +152,30 @@ function loadData(): void {
   if (typeof chrome !== 'undefined' && chrome.storage) {
     chrome.storage.local.get(['data'], (result: StorageData): void => {
       currentData = result.data || [];
+      // Ensure backward compatibility for existing data without isPinned
+      currentData.forEach(item => {
+        if (item.isPinned === undefined) {
+          item.isPinned = false;
+        }
+        if (!item.status) {
+          item.status = 'active';
+        }
+      });
       renderData();
     });
   } else {
     // Fallback for development/testing
     const stored = localStorage.getItem('extensionData');
     currentData = stored ? JSON.parse(stored) : [];
+    // Ensure backward compatibility
+    currentData.forEach(item => {
+      if (item.isPinned === undefined) {
+        item.isPinned = false;
+      }
+      if (!item.status) {
+        item.status = 'active';
+      }
+    });
     renderData();
   }
 }
@@ -173,10 +193,23 @@ function renderData(filteredData: DataItem[] = currentData): void {
     return;
   }
 
-  dataContainer.innerHTML = filteredData.map((item: DataItem) => `
-    <div class="data-item" data-id="${item.id}">
+  // Sort pinned items first, then by creation date
+  const sortedData = filteredData.sort((a, b) => {
+    // Pinned items first
+    if (a.isPinned && !b.isPinned) return -1;
+    if (!a.isPinned && b.isPinned) return 1;
+    
+    // Then by creation date (newest first)
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
+  dataContainer.innerHTML = sortedData.map((item: DataItem) => `
+    <div class="data-item ${item.isPinned ? 'pinned' : ''} ${item.status === 'archived' ? 'archived' : ''}" data-id="${item.id}">
       <div class="data-content">
-        <div class="data-key">${escapeHtml(item.key)}</div>
+        <div class="data-key">
+          ${item.isPinned ? '📌 ' : ''}${escapeHtml(item.key)}
+          ${item.status === 'archived' ? ' (Archived)' : ''}
+        </div>
         <div class="data-value">${escapeHtml(item.value)}</div>
       </div>
       <div class="data-actions">
@@ -184,9 +217,15 @@ function renderData(filteredData: DataItem[] = currentData): void {
         <div class="dropdown">
           <button class="dropdown-btn" data-id="${item.id}">⋯</button>
           <div class="dropdown-content">
-            <div class="dropdown-item" data-action="edit" data-id="${item.id}">Edit</div>
-            <div class="dropdown-item" data-action="duplicate" data-id="${item.id}">Duplicate</div>
-            <div class="dropdown-item danger" data-action="delete" data-id="${item.id}">Delete</div>
+            <div class="dropdown-item" data-action="pin" data-id="${item.id}">
+              ${item.isPinned ? '📌 Unpin' : '📌 Pin'}
+            </div>
+            <div class="dropdown-item" data-action="edit" data-id="${item.id}">✏️ Edit</div>
+            <div class="dropdown-item" data-action="duplicate" data-id="${item.id}">📋 Duplicate</div>
+            <div class="dropdown-item" data-action="archive" data-id="${item.id}">
+              ${item.status === 'archived' ? '📤 Unarchive' : '📦 Archive'}
+            </div>
+            <div class="dropdown-item danger" data-action="delete" data-id="${item.id}">🗑️ Delete</div>
           </div>
         </div>
       </div>
@@ -229,11 +268,17 @@ function addDataItemEventListeners(): void {
       if (!action || !id) return;
 
       switch (action) {
+        case 'pin':
+          togglePin(id);
+          break;
         case 'edit':
           editItem(id);
           break;
         case 'duplicate':
           duplicateItem(id);
+          break;
+        case 'archive':
+          toggleArchive(id);
           break;
         case 'delete':
           deleteItem(id);
@@ -297,6 +342,26 @@ function toggleDropdown(button: HTMLButtonElement): void {
   dropdown?.classList.toggle('active');
 }
 
+function togglePin(id: number): void {
+  const item = currentData.find((i: DataItem) => i.id === id);
+  if (!item) return;
+
+  item.isPinned = !item.isPinned;
+  saveToStorage();
+  renderData();
+  showSuccessMessage(item.isPinned ? 'Item pinned!' : 'Item unpinned!');
+}
+
+function toggleArchive(id: number): void {
+  const item = currentData.find((i: DataItem) => i.id === id);
+  if (!item) return;
+
+  item.status = item.status === 'archived' ? 'active' : 'archived';
+  saveToStorage();
+  renderData();
+  showSuccessMessage(item.status === 'archived' ? 'Item archived!' : 'Item unarchived!');
+}
+
 function editItem(id: number): void {
   const item = currentData.find((i: DataItem) => i.id === id);
   if (!item) return;
@@ -325,7 +390,8 @@ function duplicateItem(id: number): void {
     ...item,
     id: Date.now(),
     key: item.key + ' (copy)',
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    isPinned: false // Duplicated items are not pinned by default
   };
 
   currentData.push(newItem);

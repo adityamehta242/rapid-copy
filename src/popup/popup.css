@@ -367,6 +367,22 @@
       transform: translateY(0);
     }
 
+    .data-item.pinned {
+  border-left: 3px solid #4CAF50;
+  background: rgba(76, 175, 80, 0.08);
+}
+
+.data-item.archived {
+  opacity: 0.6;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.data-key {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
     /* Fallback if backdrop-filter isn't supported */
     @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
       .glass {
