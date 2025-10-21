@@ -39,13 +39,28 @@
         <p>Notes feature coming soon...</p>
       </div>
     </div>
+
+    <div class="input-form">
+      <div id="url" class="tabcontent">
+        <div class="url-form">
+          <input type="text" placeholder="Bookmark title" id="bookmarkTitle" />
+          <textarea placeholder="Description" id="bookmarkDescription" rows="3"></textarea>
+          <!-- <input type="url" placeholder="URL" id="bookmarkUrl" readonly /> -->
+          <button class="btn" id="saveBtnURL">Save Bookmark</button>
+          <button class="btn btn-secondary" id="cancelBtnURL">Cancel</button>
+        </div>
+        
+        <!-- Container where saved bookmarks will appear -->
+        <div id="url-container"></div>
+      </div>
+    </div>
     
-    <div id="url" class="tabcontent">
+    <!-- <div id="url" class="tabcontent">
       <div class="empty-state">
         <div class="empty-state-icon">🔗</div>
         <p>URL management feature coming soon...</p>
       </div>
-    </div>
+    </div> -->
   </div>
    <!-- Success message -->
   <div id="successMessage" class="success-message">Copied to clipboard!</div>
